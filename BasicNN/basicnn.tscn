@@ -1,0 +1,26 @@
+[gd_scene load_steps=2 format=3 uid="uid://dvj0wa2gqywck"]
+
+[ext_resource type="Script" path="res://basicnn.gd" id="1_6pb0o"]
+
+[node name="BasicNN" type="Node2D"]
+script = ExtResource("1_6pb0o")
+
+[node name="Label" type="Label" parent="."]
+visible = false
+offset_left = 1.0
+offset_top = 83.0
+offset_right = 58.0
+offset_bottom = 109.0
+text = "Result: "
+
+[node name="Button" type="Button" parent="."]
+visible = false
+offset_left = 1.0
+offset_top = 30.0
+offset_right = 120.0
+offset_bottom = 61.0
+text = "Add Numbers:"
+
+[node name="Node" type="Node" parent="."]
+
+[connection signal="pressed" from="Button" to="." method="_on_button_pressed"]
