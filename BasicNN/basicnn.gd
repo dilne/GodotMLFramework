@@ -1,28 +1,6 @@
 extends Node2D
 
 
-func dot_product(matrix1, matrix2):
-	if matrix1 == null or matrix2 == null:
-		print("Error: (dot_product) One or both matrices are null")
-		return
-	if typeof(matrix1[0]) != TYPE_ARRAY or typeof(matrix2) != TYPE_ARRAY:
-		print("Matrix1: ", matrix1[0])
-		print("Matrix2: ", matrix2)
-		print("Error: (dot_product) One or both inputs are not arrays")
-		return
-	if matrix1[0].size() != matrix2.size():
-		print("Error: (dot_product) Matrices have incompatible sizes")
-		return
-	var result = []
-	for i in range(matrix1.size()):
-		result.append([])
-		for j in range(matrix2[0].size()):
-			var sum = 0
-			for k in range(matrix1[0].size()):
-				sum += matrix1[i][k] * matrix2[k][j]
-			result[i].append(sum)
-	return result
-
 func sigmoid(x):
 	if x == null:
 		print("Error: (sigmoid) Invalid input to sigmoid function")
@@ -61,7 +39,83 @@ func sigmoid_derivative(x):
 	else:
 		return x * (1.0 - x)
 
-func add_arrays(array1, array2):
+func relu(x):
+	if x == null:
+		print("Error: (relu) Invalid input to relu function")
+		return
+	if typeof(x) == TYPE_ARRAY:
+		var result = []
+		for i in range(x.size()):
+			if typeof(x[i]) == TYPE_ARRAY:
+				var inner_result = []
+				for j in range(x[i].size()):
+					if typeof(x[i][j]) != TYPE_FLOAT and typeof(x[i][j]) != TYPE_INT:
+						print("Error: (relu) Array contains non-numeric value")
+						print("Array: ", x)
+						print("Array type of: ", typeof(x))
+						return
+					inner_result.append(max(0, x[i][j]))
+				result.append(inner_result)
+			else:
+				result.append(max(0, x[i]))
+		return result
+	else:
+		return max(0, x)
+
+func relu_derivative(x):
+	if typeof(x) == TYPE_ARRAY:
+		var result = []
+		for i in range(x.size()):
+			if typeof(x[i]) == TYPE_ARRAY:
+				var inner_result = []
+				for j in range(x[i].size()):
+					inner_result.append(int(x[i][j] > 0))
+				result.append(inner_result)
+			else:
+				result.append(int(x[i] > 0))
+		return result
+	else:
+		return int(x > 0)
+
+func leaky_relu(x, alpha=0.01):
+	if x == null:
+		print("Error: (leaky_relu) Invalid input to leaky_relu function")
+		return
+	if typeof(x) == TYPE_ARRAY:
+		var result = []
+		for i in range(x.size()):
+			if typeof(x[i]) == TYPE_ARRAY:
+				var inner_result = []
+				for j in range(x[i].size()):
+					if typeof(x[i][j]) != TYPE_FLOAT and typeof(x[i][j]) != TYPE_INT:
+						print("Error: (leaky_relu) Array contains non-numeric value")
+						print("Array: ", x)
+						print("Array type of: ", typeof(x))
+						return
+					inner_result.append(max(0, x[i][j]) if x[i][j] > 0 else alpha * x[i][j])
+				result.append(inner_result)
+			else:
+				result.append(max(0, x[i]) if x[i] > 0 else alpha * x[i])
+		return result
+	else:
+		return max(0, x) if x > 0 else alpha * x
+
+func leaky_relu_derivative(x, alpha=0.01):
+	if typeof(x) == TYPE_ARRAY:
+		var result = []
+		for i in range(x.size()):
+			if typeof(x[i]) == TYPE_ARRAY:
+				var inner_result = []
+				for j in range(x[i].size()):
+					inner_result.append(1.0 if x[i][j] > 0 else alpha)
+				result.append(inner_result)
+			else:
+				result.append(1.0 if x[i] > 0 else alpha)
+		return result
+	else:
+		return 1.0 if x > 0 else alpha
+
+func add(array1, array2):
 	if array1.size() != array2.size():
 		print("Error: Arrays have different sizes")
 		return null
@@ -76,7 +130,7 @@ func add_arrays(array1, array2):
 			result.append(array1[i] + array2[i])
 	return result
 
-func subtract_arrays(array1, array2):
+func subtract(array1, array2):
 	if array1.size() != array2.size():
 		print("Error: Arrays have different sizes")
 		return null
@@ -91,7 +145,7 @@ func subtract_arrays(array1, array2):
 			result.append(array1[i] - array2[i])
 	return result
 
-func multiply_arrays(array1, array2):
+func matmul(array1, array2):
 	if array1.size() != array2.size():
 		print("Error: Arrays have different sizes")
 		return null
@@ -106,7 +160,29 @@ func multiply_arrays(array1, array2):
 			result.append(array1[i] * array2[i])
 	return result
 
-func multiply_array_by_scalar(array, scalar):
+func dot(matrix1, matrix2):
+	if matrix1 == null or matrix2 == null:
+		print("Error: (dot) One or both matrices are null")
+		return
+	if typeof(matrix1[0]) != TYPE_ARRAY or typeof(matrix2) != TYPE_ARRAY:
+		print("Matrix1: ", matrix1[0])
+		print("Matrix2: ", matrix2)
+		print("Error: (dot) One or both inputs are not arrays")
+		return
+	if matrix1[0].size() != matrix2.size():
+		print("Error: (dot) Matrices have incompatible sizes")
+		return
+	var result = []
+	for i in range(matrix1.size()):
+		result.append([])
+		for j in range(matrix2[0].size()):
+			var sum = 0
+			for k in range(matrix1[0].size()):
+				sum += matrix1[i][k] * matrix2[k][j]
+			result[i].append(sum)
+	return result
+
+func mul_array_by_scalar(array, scalar):
 	var result = []
 	for i in range(array.size()):
 		if typeof(array[i]) == TYPE_ARRAY:
@@ -145,17 +221,38 @@ func initialize_weights(input_sz, hidden_sz, output_sz):
 
 	return [weights_input_hidden, weights_hidden_output]
 
+func he_initialize_weights(input_sz, hidden_sz, output_sz):
+	var weights_input_hidden = []
+	var weights_hidden_output = []
+
+	# Initialize weights_input_hidden
+	for i in range(input_sz):
+		weights_input_hidden.append([])
+		for j in range(hidden_sz):
+			var randn = randf_range(-1, 1)  # generates a random float between -1 and 1
+			weights_input_hidden[i].append(randn * sqrt(2.0 / input_sz))
+
+	# Initialize weights_hidden_output
+	for i in range(hidden_sz):
+		weights_hidden_output.append([])
+		for j in range(output_sz):
+			var randn = randf_range(-1, 1)  # generates a random float between -1 and 1
+			weights_hidden_output[i].append(randn * sqrt(2.0 / hidden_sz))
+
+	return [weights_input_hidden, weights_hidden_output]
+
+
 func feedforward(X1, weights_input_hidden1, weights_hidden_output1):
-	var dp_result = dot_product(X1, weights_input_hidden1)
+	var dp_result = dot(X1, weights_input_hidden1)
 	if dp_result == null:
-		print("Error: dot_product returned null")
+		print("Error: dot returned null")
 		return
 	var hidden_output = sigmoid(dp_result)
 	if hidden_output == null:
 		print("Error: sigmoid returned null")
 		return
 	# Calculate output
-	var output = sigmoid(dot_product(hidden_output, weights_hidden_output1))
+	var output = sigmoid(dot(hidden_output, weights_hidden_output1))
 	return [hidden_output, output]
 
 func backpropagate(X1, y1, learning_rate1, weights_input_hidden1, weights_hidden_output1, hidden_output, output):
@@ -163,16 +260,16 @@ func backpropagate(X1, y1, learning_rate1, weights_input_hidden1, weights_hidden
 		print("Error: y1 or output is null")
 		return
 	# Calculate output error and output delta
-	var output_error = subtract_arrays(y1, output)
-	var output_delta = multiply_arrays(output_error, sigmoid_derivative(output))
+	var output_error = subtract(y1, output)
+	var output_delta = matmul(output_error, sigmoid_derivative(output))
 
 	# Calculate hidden layer error and delta
-	var hidden_error = dot_product(output_delta, transpose(weights_hidden_output1))
-	var hidden_delta = multiply_arrays(hidden_error, sigmoid_derivative(hidden_output))
+	var hidden_error = dot(output_delta, transpose(weights_hidden_output1))
+	var hidden_delta = matmul(hidden_error, sigmoid_derivative(hidden_output))
 
 	# Update weights
-	weights_hidden_output1 = add_arrays(weights_hidden_output1, multiply_array_by_scalar(dot_product(transpose(hidden_output), output_delta), learning_rate1))
-	weights_input_hidden1 = add_arrays(weights_input_hidden1, multiply_array_by_scalar(dot_product(transpose(X1), hidden_delta), learning_rate1))
+	weights_hidden_output1 = add(weights_hidden_output1, mul_array_by_scalar(dot(transpose(hidden_output), output_delta), learning_rate1))
+	weights_input_hidden1 = add(weights_input_hidden1, mul_array_by_scalar(dot(transpose(X1), hidden_delta), learning_rate1))
 
 
 	return [weights_input_hidden1, weights_hidden_output1]
