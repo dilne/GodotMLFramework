@@ -279,7 +279,7 @@ func _ready():
 	var y = [[0], [1], [1], [0]]
 	
 	var input_size = 2
-	var hidden_size = 2
+	var hidden_size = 16
 	var output_size = 1
 	
 	# Initialize the weights
@@ -288,7 +288,7 @@ func _ready():
 	var weights_hidden_output = result[1]
 	
 	# Train the neural network
-	var epochs = 100000
+	var epochs = 5000
 	var learning_rate = 0.1
 	
 	for epoch in range(epochs):
