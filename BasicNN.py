@@ -35,24 +35,31 @@ def he_initialize_weights(input_size, hidden_size, output_size):
     weights_hidden_output = np.random.randn(hidden_size, output_size) * np.sqrt(2. / hidden_size)
     return weights_input_hidden, weights_hidden_output
 
-
 # Feedforward through the network
 def feedforward(X, weights_input_hidden, weights_hidden_output):
-    hidden_output = leaky_relu(np.dot(X, weights_input_hidden))
-    output = leaky_relu(np.dot(hidden_output, weights_hidden_output))
+    hidden_output = sigmoid(np.dot(X, weights_input_hidden))
+    output = sigmoid(np.dot(hidden_output, weights_hidden_output))
     return hidden_output, output
 
-# Backpropagate and update the weights
-def backpropagate(X, y, learning_rate, weights_input_hidden, weights_hidden_output, hidden_output, output):
+# Gradient Descent Optimizer
+def optim_sgd(X, y, learning_rate, weights_input_hidden, weights_hidden_output, hidden_output, output):
     output_error = y - output
-    output_delta = output_error * leaky_relu_derivative(output)
+    output_delta = output_error * sigmoid_derivative(output)
 
     hidden_error = np.dot(output_delta, weights_hidden_output.T)
-    hidden_delta = hidden_error * leaky_relu_derivative(hidden_output)
+    hidden_delta = hidden_error * sigmoid_derivative(hidden_output)
 
     weights_hidden_output += np.dot(hidden_output.T, output_delta) * learning_rate
     weights_input_hidden += np.dot(X.T, hidden_delta) * learning_rate
     return weights_input_hidden, weights_hidden_output
+
+# Initialize the Adam optimizer parameters
+def initialize_adam_parameters(input_size, hidden_size, output_size):
+    v_dW1 = np.zeros((input_size, hidden_size))
+    v_dW2 = np.zeros((hidden_size, output_size))
+    s_dW1 = np.zeros((input_size, hidden_size))
+    s_dW2 = np.zeros((hidden_size, output_size))
+    return v_dW1, v_dW2, s_dW1, s_dW2
 
 # Example usage
 def main():
@@ -66,7 +73,7 @@ def main():
     output_size = 1
 
     # Initialize the weights
-    weights_input_hidden, weights_hidden_output = he_initialize_weights(input_size, hidden_size, output_size)
+    weights_input_hidden, weights_hidden_output = initialize_weights(input_size, hidden_size, output_size)
 
     # Train the neural network
     epochs = 100000
@@ -74,7 +81,7 @@ def main():
 
     for epoch in range(epochs):
         hidden_output, output = feedforward(X, weights_input_hidden, weights_hidden_output)
-        weights_input_hidden, weights_hidden_output = backpropagate(X, y, learning_rate, weights_input_hidden, weights_hidden_output, hidden_output, output)
+        weights_input_hidden, weights_hidden_output = optim_sgd(X, y, learning_rate, weights_input_hidden, weights_hidden_output, hidden_output, output)
 
         if epoch % 10000 == 0:
             print(epoch)
@@ -83,7 +90,6 @@ def main():
                 print(f"Input: {data}, Output: {prediction}")
             print()
         
-
     # Test the trained network
     for data in test_data:
         _, prediction = feedforward(data, weights_input_hidden, weights_hidden_output)

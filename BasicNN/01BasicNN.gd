@@ -1,4 +1,4 @@
-extends Node2D
+extends Node
 
 
 func sigmoid(x):
@@ -241,7 +241,6 @@ func he_initialize_weights(input_sz, hidden_sz, output_sz):
 
 	return [weights_input_hidden, weights_hidden_output]
 
-
 func feedforward(X1, weights_input_hidden1, weights_hidden_output1):
 	var dp_result = dot(X1, weights_input_hidden1)
 	if dp_result == null:
@@ -255,7 +254,7 @@ func feedforward(X1, weights_input_hidden1, weights_hidden_output1):
 	var output = sigmoid(dot(hidden_output, weights_hidden_output1))
 	return [hidden_output, output]
 
-func backpropagate(X1, y1, learning_rate1, weights_input_hidden1, weights_hidden_output1, hidden_output, output):
+func optim_sgd(X1, y1, learning_rate1, weights_input_hidden1, weights_hidden_output1, hidden_output, output):
 	if y1 == null or output == null:
 		print("Error: y1 or output is null")
 		return
@@ -296,7 +295,7 @@ func _ready():
 		var hidden_output = result_ff[0]
 		var output_ff = result_ff[1]
 		
-		var result_bp = backpropagate(X, y, learning_rate, weights_input_hidden, weights_hidden_output, hidden_output, output_ff)
+		var result_bp = optim_sgd(X, y, learning_rate, weights_input_hidden, weights_hidden_output, hidden_output, output_ff)
 		weights_input_hidden = result_bp[0]
 		weights_hidden_output = result_bp[1]
 
