@@ -53,14 +53,6 @@ def optim_sgd(X, y, learning_rate, weights_input_hidden, weights_hidden_output, 
     weights_input_hidden += np.dot(X.T, hidden_delta) * learning_rate
     return weights_input_hidden, weights_hidden_output
 
-# Initialize the Adam optimizer parameters
-def initialize_adam_parameters(input_size, hidden_size, output_size):
-    v_dW1 = np.zeros((input_size, hidden_size))
-    v_dW2 = np.zeros((hidden_size, output_size))
-    s_dW1 = np.zeros((input_size, hidden_size))
-    s_dW2 = np.zeros((hidden_size, output_size))
-    return v_dW1, v_dW2, s_dW1, s_dW2
-
 # Example usage
 def main():
     # Define the input and output data
