@@ -634,7 +634,7 @@ func _ready():
 	print("Dataset X size: ", len(X[0]))
 	print("Dataset y size: ", len(y))
 	var input_size = 8
-	var hidden_size = 64
+	var hidden_size = 1
 	var output_size = 1
 	
 	# Initialize the weights
@@ -643,9 +643,10 @@ func _ready():
 	var weights_hidden_output = result[1]
 	
 	# Train the neural network
-	var epochs = 1000
+	var epochs = 10
 	var learning_rate = 0.1
-	
+
+	var start_time = Time.get_ticks_msec()
 	for epoch in range(epochs):
 		var result_ff = feedforward(X, weights_input_hidden, weights_hidden_output)
 		var hidden_output = result_ff[0]
@@ -654,6 +655,11 @@ func _ready():
 		var result_bp = optim_sgd(X, y, learning_rate, weights_input_hidden, weights_hidden_output, hidden_output, output_ff)
 		weights_input_hidden = result_bp[0]
 		weights_hidden_output = result_bp[1]
+	
+	var end_time = Time.get_ticks_msec()
+	var elapsed_time = end_time - start_time
+	print("Time taken: " + str(elapsed_time/1000) + " s (" + str(elapsed_time) + " ms)")
+	
 
 	# Test the trained network
 	var test_data = [[[6,148,72,35,0,33.6,0.627,50]],
