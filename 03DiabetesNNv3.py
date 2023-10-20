@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
+import time
 
 def sigmoid(x):
     return 1 / (1 + np.exp(-x))
@@ -22,6 +23,7 @@ def fully_connected(input_size, output_size, activation):
 
 # Training the network
 def train_network(network, X, y, lr, epochs, optimizer='gradient_descent'):
+    start_time = time.time()    # Start the timer
     # Initialize parameters for Adam optimizer
     if optimizer == 'adam':
         beta1 = 0.9
@@ -59,7 +61,10 @@ def train_network(network, X, y, lr, epochs, optimizer='gradient_descent'):
                 m_hat = m[i] / (1 - np.power(beta1, epoch+1))
                 v_hat = v[i] / (1 - np.power(beta2, epoch+1))
                 network[i]['weights'] += lr * m_hat / (np.sqrt(v_hat) + epsilon)
-
+    end_time = time.time()  # Stop the timer
+    # Calculate and print the elapsed time
+    elapsed_time = end_time - start_time
+    print(f"Elapsed time: {elapsed_time} seconds")
     return network
 
 def make_predictions(network, X):
@@ -73,8 +78,8 @@ def make_predictions(network, X):
 
 
 # Creating the model
-network = [fully_connected(8, 8, 'relu'),
-           fully_connected(8, 8, 'relu'),
+network = [fully_connected(8, 8, 'sigmoid'),
+           fully_connected(8, 8, 'sigmoid'),
            fully_connected(8, 1, 'sigmoid')]
 
 data = pd.read_csv('/Users/danielmilne/Documents/GitHub/GodotMLFramework/diabetes.csv')
@@ -90,7 +95,7 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_
 
 # Training the model
 lr = 0.001
-epochs = 500
+epochs = 200
 network = train_network(network, X_train, y_train, lr, epochs, optimizer='gradient_descent')
 
 # Making predictions
