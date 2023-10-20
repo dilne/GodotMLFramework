@@ -52,7 +52,7 @@ train_data = TensorDataset(X_train, y_train)
 train_loader = DataLoader(train_data, batch_size=10, shuffle=True)
 
 # Train the model for 100 epochs
-for epoch in range(10):
+for epoch in range(50):
     running_loss = 0.0
     for inputs, labels in train_loader:
         optimizer.zero_grad()

@@ -4,7 +4,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 
 # Load the Pima Diabetes dataset from a CSV file
-data = pd.read_csv('/Users/danielmilne/Documents/GitHub/GodotMLFramework/diabetes.csv') # replace with your own
+data = pd.read_csv('/Users/danielmilne/Documents/GitHub/GodotMLFramework/diabetes.csv') 
 
 # Split the dataset into features and labels
 X = np.array(data.iloc[:, :8].values)
@@ -17,13 +17,18 @@ X = scaler.fit_transform(X)
 # Split the data into training and testing sets
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-# Define the sigmoid function
 def sigmoid(x):
     return 1 / (1 + np.exp(-x))
 
-# Define the derivative of the sigmoid function
 def sigmoid_derivative(x):
     return x * (1 - x)
+
+def relu(x):
+    return np.maximum(0, x)
+
+def relu_derivative(x):
+    return np.where(x > 0, 1.0, 0.0)
+
 
 # Initialize
 def initialize(inputLayer_neurons, hiddenLayer_neurons, outputLayer_neurons):
@@ -36,7 +41,7 @@ def initialize(inputLayer_neurons, hiddenLayer_neurons, outputLayer_neurons):
 def feedforward(X_train, wh, bh, bout):
     hidden_layer_input1=np.dot(X_train, wh)
     hidden_layer_input=hidden_layer_input1 + bh
-    hiddenlayer_activations = sigmoid(hidden_layer_input)
+    hiddenlayer_activations = relu(hidden_layer_input)
     output_layer_input1=np.dot(hiddenlayer_activations,wout)
     output_layer_input= output_layer_input1+ bout
     output = sigmoid(output_layer_input)
@@ -45,7 +50,7 @@ def feedforward(X_train, wh, bh, bout):
 def backpropagation(X_train, y_train, output, hiddenlayer_activations, wh, bh, wout, bout):
     E = y_train.reshape(-1, 1) - output
     slope_output_layer = sigmoid_derivative(output)
-    slope_hidden_layer = sigmoid_derivative(hiddenlayer_activations)
+    slope_hidden_layer = relu_derivative(hiddenlayer_activations)
     d_output = E * slope_output_layer
     Error_at_hidden_layer = d_output.dot(wout.T)
     d_hiddenlayer = Error_at_hidden_layer * slope_hidden_layer
@@ -68,7 +73,7 @@ wh, bh, wout, bout = initialize(inputLayer_neurons,
                                 outputLayer_neurons)
 
 # Training the model for 500 epochs
-for epoch in range(500):
+for epoch in range(50):
     # Forward Propagation
     output, hiddenlayer_activations = feedforward(X_train, wh, bh, bout)
 
@@ -85,7 +90,7 @@ for epoch in range(500):
 # Make predictions on the test data
 test_hidden_layer_input1=np.dot(X_test, wh)
 test_hidden_layer_input=test_hidden_layer_input1 + bh
-test_hiddenlayer_activations = sigmoid(test_hidden_layer_input)
+test_hiddenlayer_activations = relu(test_hidden_layer_input)
 test_output_layer_input1=np.dot(test_hiddenlayer_activations,wout)
 test_output_layer_input= test_output_layer_input1+ bout
 predictions = sigmoid(test_output_layer_input)
