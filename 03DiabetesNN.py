@@ -1,98 +1,112 @@
 import numpy as np
 import pandas as pd
-from sklearn.preprocessing import MinMaxScaler
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+import time
 
-
-# Define the sigmoid activation function
 def sigmoid(x):
     return 1 / (1 + np.exp(-x))
 
-# Define the derivative of the sigmoid function
 def sigmoid_derivative(x):
     return x * (1 - x)
 
-# Define the rely activation function
 def relu(x):
     return np.maximum(0, x)
 
-# Define the derivative of the relu function
 def relu_derivative(x):
-    return np.where(x > 0, 1, 0)
+    return np.where(x > 0, 1.0, 0.0)
 
-# Define the leaky relu function
-def leaky_relu(x, alpha=0.01):
-    return np.where(x > 0, x, x * alpha)
+# Fully connected layer
+def fully_connected(input_size, output_size, activation):
+    return {'weights': 2 * np.random.random((input_size, output_size)) - 1,
+            'activation': activation}
 
-# Define the derivative of the leaky relu function
-def leaky_relu_derivative(x, alpha=0.01):
-    return np.where(x > 0, 1, alpha)
+# Training the network
+def train_network(network, X, y, lr, epochs, optimizer='gradient_descent'):
+    start_time = time.time()    # Start the timer
+    # Initialize parameters for Adam optimizer
+    if optimizer == 'adam':
+        beta1 = 0.9
+        beta2 = 0.999
+        epsilon = 1e-8
+        m = [0 for _ in range(len(network))]
+        v = [0 for _ in range(len(network))]
 
-# Initialize the weights for the input and hidden layers
-def initialize_weights(input_size, hidden_size, output_size):
-    weights_input_hidden = np.random.rand(input_size, hidden_size)
-    weights_hidden_output = np.random.rand(hidden_size, output_size)
-    return weights_input_hidden, weights_hidden_output
-
-def he_initialize_weights(input_size, hidden_size, output_size):
-    weights_input_hidden = np.random.randn(input_size, hidden_size) * np.sqrt(2. / input_size)
-    weights_hidden_output = np.random.randn(hidden_size, output_size) * np.sqrt(2. / hidden_size)
-    return weights_input_hidden, weights_hidden_output
-
-# Feedforward through the network
-def feedforward(X, weights_input_hidden, weights_hidden_output):
-    hidden_output = relu(np.dot(X, weights_input_hidden))
-    output = sigmoid(np.dot(hidden_output, weights_hidden_output))
-    return hidden_output, output
-
-# Gradient Descent Optimizer
-def optim_sgd(X, y, learning_rate, weights_input_hidden, weights_hidden_output, hidden_output, output):
-    output_error = y - np.squeeze(output)
-    output_delta = output_error * sigmoid_derivative(np.squeeze(output))
-    hidden_error = np.dot(output_delta.reshape(-1, 1), weights_hidden_output.T)
-    hidden_delta = hidden_error * relu_derivative(hidden_output)
-    weights_hidden_output += np.dot(hidden_output.T, output_delta.reshape(-1, 1)) * learning_rate
-    weights_input_hidden += np.dot(X.T, hidden_delta) * learning_rate
-
-    return weights_input_hidden, weights_hidden_output
-
-def main():
-    # Read the CSV file
-    data = pd.read_csv('/Users/danielmilne/Documents/GitHub/GodotMLFramework/diabetes.csv')
-
-    # Define the input and output data
-    X = np.array(data.iloc[:, :8].values)
-    y = np.array(data.iloc[:, 8].values)
-    scaler = MinMaxScaler()
-    X_normalized = scaler.fit_transform(X)
-
-    test_data = np.array([[6,148,72,35,0,33.6,0.627,50],
-	[1,85,66,29,0,26.6,0.351,31]])
-
-    input_size = 8
-    hidden_size = 128
-    output_size = 1
-
-    # Initialize the weights
-    weights_input_hidden, weights_hidden_output = he_initialize_weights(input_size, hidden_size, output_size)
-
-    # Train the neural network
-    epochs = 100
-    learning_rate = 0.1
-    
     for epoch in range(epochs):
-        hidden_output, output = feedforward(X, weights_input_hidden, weights_hidden_output)
-        weights_input_hidden, weights_hidden_output = optim_sgd(X, y, learning_rate, weights_input_hidden, weights_hidden_output, hidden_output, output)
+        # Forward propagation
+        layers = [X]
+        for i in range(len(network)):
+            if network[i]['activation'] == 'sigmoid':
+                layers.append(sigmoid(np.dot(layers[i], network[i]['weights'])))
+            elif network[i]['activation'] == 'relu':
+                layers.append(relu(np.dot(layers[i], network[i]['weights'])))
 
-        if epoch % 10 == 0:
-            print(epoch)
-            for data in test_data:
-                _, prediction = feedforward(data, weights_input_hidden, weights_hidden_output)
-                print(f"Input: {data}, Output: {prediction}")
-            print()
-        
-    # Test the trained network
-    for data in test_data:
-        _, prediction = feedforward(data, weights_input_hidden, weights_hidden_output)
-        print(f"Input: {data}, Output: {prediction}")
+        # Backpropagation
+        deltas = [y - layers[-1]]
+        for i in range(len(network)-2, -1, -1):
+            error = deltas[-1].dot(network[i+1]['weights'].T)
+            if network[i]['activation'] == 'sigmoid':
+                delta = error * sigmoid_derivative(layers[i+1])
+            elif network[i]['activation'] == 'relu':
+                delta = error * relu_derivative(layers[i+1])
+            deltas.append(delta)
 
-main()
+        # Update weights
+        for i in range(len(network)):
+            if optimizer == 'gradient_descent':
+                network[i]['weights'] += lr * layers[i].T.dot(deltas[-(i+1)])
+            elif optimizer == 'adam':
+                m[i] = beta1 * m[i] + (1 - beta1) * layers[i].T.dot(deltas[-(i+1)])
+                v[i] = beta2 * v[i] + (1 - beta2) * np.square(layers[i].T.dot(deltas[-(i+1)]))
+                m_hat = m[i] / (1 - np.power(beta1, epoch+1))
+                v_hat = v[i] / (1 - np.power(beta2, epoch+1))
+                network[i]['weights'] += lr * m_hat / (np.sqrt(v_hat) + epsilon)
+    end_time = time.time()  # Stop the timer
+    # Calculate and print the elapsed time
+    elapsed_time = end_time - start_time
+    print(f"Train time taken: {elapsed_time} seconds")
+    return network
+
+def make_predictions(network, X):
+    layers = [X]
+    for i in range(len(network)):
+        if network[i]['activation'] == 'sigmoid':
+            layers.append(sigmoid(np.dot(layers[i], network[i]['weights'])))
+        elif network[i]['activation'] == 'relu':
+            layers.append(relu(np.dot(layers[i], network[i]['weights'])))
+    return layers[-1]
+
+
+# Creating the model
+network = [fully_connected(8, 8, 'sigmoid'),
+           fully_connected(8, 8, 'sigmoid'),
+           fully_connected(8, 1, 'sigmoid')]
+
+data = pd.read_csv('/Users/danielmilne/Documents/GitHub/GodotMLFramework/diabetes.csv')
+# Split the dataset into features and labels
+X = np.array(data.iloc[:, :8].values)
+y = np.array(data.iloc[:, 8].values).reshape(-1, 1)
+
+# Standardize the data
+scaler = StandardScaler()
+X = scaler.fit_transform(X)
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Training the model
+lr = 0.001
+epochs = 100
+network = train_network(network, X_train, y_train, lr, epochs, optimizer='gradient_descent')
+
+# Making predictions
+start_time = time.time()    # Start the timer
+predictions = make_predictions(network, X_test)
+predicted_labels = (predictions > 0.5).astype(float)
+
+# Calculate the number of correct predictions
+correct_predictions = (predicted_labels == y_test.reshape(-1, 1)).sum()
+print(f"Total correct predictions: {correct_predictions} out of {len(X_test)}")
+end_time = time.time()  # Stop the timer
+# Calculate and print the elapsed time
+elapsed_time = end_time - start_time
+print(f"Prediction time taken: {elapsed_time} seconds")
