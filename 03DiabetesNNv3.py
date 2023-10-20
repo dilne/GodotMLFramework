@@ -41,8 +41,8 @@ def train_network(network, X, y, lr, epochs, optimizer='gradient_descent'):
 
         # Backpropagation
         deltas = [y - layers[-1]]
-        for i in range(len(network)-1, -1, -1):
-            error = deltas[-1].dot(network[i]['weights'].T)
+        for i in range(len(network)-2, -1, -1):
+            error = deltas[-1].dot(network[i+1]['weights'].T)
             if network[i]['activation'] == 'sigmoid':
                 delta = error * sigmoid_derivative(layers[i+1])
             elif network[i]['activation'] == 'relu':
@@ -52,10 +52,10 @@ def train_network(network, X, y, lr, epochs, optimizer='gradient_descent'):
         # Update weights
         for i in range(len(network)):
             if optimizer == 'gradient_descent':
-                network[i]['weights'] += lr * layers[i].T.dot(deltas[-(i+2)])
+                network[i]['weights'] += lr * layers[i].T.dot(deltas[-(i+1)])
             elif optimizer == 'adam':
-                m[i] = beta1 * m[i] + (1 - beta1) * layers[i].T.dot(deltas[-(i+2)])
-                v[i] = beta2 * v[i] + (1 - beta2) * np.square(layers[i].T.dot(deltas[-(i+2)]))
+                m[i] = beta1 * m[i] + (1 - beta1) * layers[i].T.dot(deltas[-(i+1)])
+                v[i] = beta2 * v[i] + (1 - beta2) * np.square(layers[i].T.dot(deltas[-(i+1)]))
                 m_hat = m[i] / (1 - np.power(beta1, epoch+1))
                 v_hat = v[i] / (1 - np.power(beta2, epoch+1))
                 network[i]['weights'] += lr * m_hat / (np.sqrt(v_hat) + epsilon)
@@ -74,8 +74,8 @@ def make_predictions(network, X):
 
 # Creating the model
 network = [fully_connected(8, 8, 'relu'),
+           fully_connected(8, 8, 'relu'),
            fully_connected(8, 1, 'sigmoid')]
-
 
 data = pd.read_csv('/Users/danielmilne/Documents/GitHub/GodotMLFramework/diabetes.csv')
 # Split the dataset into features and labels
@@ -88,10 +88,9 @@ X = scaler.fit_transform(X)
 
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
+# Training the model
 lr = 0.001
 epochs = 500
-
-# Training the model
 network = train_network(network, X_train, y_train, lr, epochs, optimizer='gradient_descent')
 
 # Making predictions
