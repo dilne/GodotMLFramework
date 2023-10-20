@@ -1,8 +1,15 @@
 extends Node
 
+
+# 5 ms
 func sigmoid(x):
+	var start_time = Time.get_ticks_msec()
+
 	if x == null:
 		print("Error: (sigmoid) Invalid input to sigmoid function")
+		var end_time = Time.get_ticks_msec()
+		var elapsed_time = end_time - start_time
+		print("Sigmoid 1: " + str(elapsed_time) + " ms")
 		return
 	if typeof(x) == TYPE_ARRAY:
 		var result = []
@@ -19,11 +26,20 @@ func sigmoid(x):
 				result.append(inner_result)
 			else:
 				result.append(1.0 / (1.0 + exp(-x[i])))
+		var end_time = Time.get_ticks_msec()
+		var elapsed_time = end_time - start_time
+		print("Sigmoid 2: " + str(elapsed_time) + " ms")
 		return result
 	else:
-		return 1.0 / (1.0 + exp(-x))
+		var ret = 1.0 / (1.0 + exp(-x))
+		var end_time = Time.get_ticks_msec()
+		var elapsed_time = end_time - start_time
+		print("Sigmoid 3: " + str(elapsed_time) + " ms")
+		return ret
 
+# 5 ms
 func sigmoid_derivative(x):
+	var start_time = Time.get_ticks_msec()
 	if typeof(x) == TYPE_ARRAY:
 		var result = []
 		for i in range(x.size()):
@@ -34,9 +50,16 @@ func sigmoid_derivative(x):
 				result.append(inner_result)
 			else:
 				result.append(x[i] * (1.0 - x[i]))
+		var end_time = Time.get_ticks_msec()
+		var elapsed_time = end_time - start_time
+		print("Dev sig 1: " + str(elapsed_time) + " ms")
 		return result
 	else:
-		return x * (1.0 - x)
+		var ret = x * (1.0 - x)
+		var end_time = Time.get_ticks_msec()
+		var elapsed_time = end_time - start_time
+		print("Dev sig 2: " + str(elapsed_time) + " ms")
+		return ret
 
 func relu(x):
 	if x == null:
@@ -76,18 +99,9 @@ func relu_derivative(x):
 	else:
 		return int(x > 0)
 
-func dot(matrix1, matrix2):
-	if matrix1 == null or matrix2 == null:
-		print("Error: (dot) One or both matrices are null")
-		return
-	if typeof(matrix1[0]) != TYPE_ARRAY or typeof(matrix2) != TYPE_ARRAY:
-		print("Matrix1: ", matrix1[0])
-		print("Matrix2: ", matrix2)
-		print("Error: (dot) One or both inputs are not arrays")
-		return
-	if matrix1[0].size() != matrix2.size():
-		print("Error: (dot) Matrices have incompatible sizes")
-		return
+# 5 - 35 ms
+func dot(matrix1, matrix2):	
+	var start_time = Time.get_ticks_msec()
 	var result = []
 	for i in range(matrix1.size()):
 		result.append([])
@@ -96,27 +110,43 @@ func dot(matrix1, matrix2):
 			for k in range(matrix1[0].size()):
 				sum += matrix1[i][k] * matrix2[k][j]
 			result[i].append(sum)
+	var end_time = Time.get_ticks_msec()
+	var elapsed_time = end_time - start_time
+	print("      dot: " + str(elapsed_time) + " ms")
 	return result
 
+# 0 ms
 func transpose(matrix):
+	var start_time = Time.get_ticks_msec()
+
 	var result = []
 	for i in range(matrix[0].size()):
 		var row = []
 		for j in range(matrix.size()):
 			row.append(matrix[j][i])
 		result.append(row)
+	var end_time = Time.get_ticks_msec()
+	var elapsed_time = end_time - start_time
+	print("Transpose: " + str(elapsed_time) + " ms")
 	return result
 
+# ?
 func square(matrix):
+	var start_time = Time.get_ticks_msec()
 	var result = []
 	for i in range(len(matrix)):
 		var row = []
 		for j in range(len(matrix[i])):
 			row.append(matrix[i][j] * matrix[i][j])
 		result.append(row)
+	var end_time = Time.get_ticks_msec()
+	var elapsed_time = end_time - start_time
+	print("   Square: " + str(elapsed_time) + " ms")
 	return result
 
+# 0 ms
 func add(array1, array2):
+	var start_time = Time.get_ticks_msec()
 	if array1.size() != array2.size():
 		print("Error: Arrays have different sizes")
 		return null
@@ -129,9 +159,14 @@ func add(array1, array2):
 			result.append(inner_result)
 		else:
 			result.append(array1[i] + array2[i])
+	var end_time = Time.get_ticks_msec()
+	var elapsed_time = end_time - start_time
+	print("      Add: " + str(elapsed_time) + " ms")
 	return result
 
+# 1 ms
 func subtract(array1, array2):
+	var start_time = Time.get_ticks_msec()
 	if array1.size() != array2.size():
 		print("Error: Arrays have different sizes")
 		return null
@@ -144,9 +179,14 @@ func subtract(array1, array2):
 			result.append(inner_result)
 		else:
 			result.append(array1[i] - array2[i])
+	var end_time = Time.get_ticks_msec()
+	var elapsed_time = end_time - start_time
+	print(" Subtract: " + str(elapsed_time) + " ms")
 	return result
 
+# 4 ms
 func matmul(array1, array2):
+	var start_time = Time.get_ticks_msec()
 	if array1.size() != array2.size():
 		print("Error: Arrays have different sizes")
 		return null
@@ -159,9 +199,14 @@ func matmul(array1, array2):
 			result.append(inner_result)
 		else:
 			result.append(array1[i] * array2[i])
+	var end_time = Time.get_ticks_msec()
+	var elapsed_time = end_time - start_time
+	print("   Matmul: " + str(elapsed_time) + " ms")
 	return result
 
+# 0 ms
 func mul_array_by_scalar(array, scalar):
+	var start_time = Time.get_ticks_msec()
 	var result = []
 	for i in range(array.size()):
 		if typeof(array[i]) == TYPE_ARRAY:
@@ -171,15 +216,23 @@ func mul_array_by_scalar(array, scalar):
 			result.append(inner_result)
 		else:
 			result.append(array[i] * scalar)
+	var end_time = Time.get_ticks_msec()
+	var elapsed_time = end_time - start_time
+	print("Mularrsca: " + str(elapsed_time) + " ms")
 	return result
 
+# 0 ms
 func fully_connected(input_size, output_size, activation):
+	var start_time = Time.get_ticks_msec()
 	var weights = []
 	for i in range(input_size):
 		var row = []
 		for j in range(output_size):
 			row.append(randf() * 2 - 1)
 		weights.append(row)
+	var end_time = Time.get_ticks_msec()
+	var elapsed_time = end_time - start_time
+	print("       FC: " + str(elapsed_time) + " ms")
 	return {
 		'weights': weights,
 		'activation': activation
@@ -230,12 +283,8 @@ func train_network(network, X, y, lr, epochs, optimizer='gradient_descent'):
 		# Update weights
 		for i in range(len(network)):
 			if optimizer == 'gradient_descent':
-				#network[i]['weights'] += lr * transpose(layers[i]).dot(deltas[-(i+1)])
 				network[i]['weights'] = add(network[i]['weights'], mul_array_by_scalar(dot(transpose(layers[i]), deltas[-(i+1)]), lr))
 			elif optimizer == 'adam':
-#				beta1 = 0.9
-#				beta2 = 0.999
-#				epsilon = 1e-8
 				m[i] = beta1 * m[i] + (1 - beta1) * transpose(layers[i]).dot(deltas[-(i+1)])
 				v[i] = beta2 * v[i] + (1 - beta2) * square(transpose(layers[i]).dot(deltas[-(i+1)]))
 				var m_hat = m[i] / (1 - pow(beta1, epoch+1))
@@ -308,7 +357,7 @@ func _ready():
 	
 	# Training the model
 	var lr = 0.001
-	var epochs = 100
+	var epochs = 0
 	var optimizer = 'gradient_descent'
 	network = train_network(network, X_train, y_train, lr, epochs, optimizer)
 
@@ -334,3 +383,21 @@ func _ready():
 	var end_time = Time.get_ticks_msec()
 	var elapsed_time = end_time - start_time
 	print("Prediction time taken: " + str(elapsed_time/1000) + " s (" + str(elapsed_time) + " ms)")
+
+	
+	# Testing vectors
+	var a1 = [2, 2]
+	var b1 = [2, 2]
+	var vectorA1 = Vector2(a1[0], a1[1])
+	var vectorB1 = Vector2(b1[0], b1[1])
+	var c1 = vectorA1.dot(vectorB1)
+	print(vectorA1)
+	print(vectorB1)
+	print(c1)
+	
+	var a2 = Vector2(2, 2)
+	var b2 = Vector2(2, 2)
+	var c2 = a2.dot(b2)
+	print(a2)
+	print(b2)
+	print(c2)
