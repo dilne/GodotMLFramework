@@ -67,6 +67,7 @@ def train_network(network, X, y, lr, epochs, optimizer='gradient_descent'):
     print(f"Train time taken: {elapsed_time} seconds")
     return network
 
+
 def make_predictions(network, X):
     layers = [X]
     for i in range(len(network)):
