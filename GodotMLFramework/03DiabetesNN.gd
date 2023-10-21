@@ -100,7 +100,8 @@ func relu_derivative(x):
 		return int(x > 0)
 
 # 5 - 35 ms
-func dot(matrix1, matrix2):	
+func dot(matrix1, matrix2):
+	print("matrix1: ", matrix1)
 	var start_time = Time.get_ticks_msec()
 	var result = []
 	for i in range(matrix1.size()):
