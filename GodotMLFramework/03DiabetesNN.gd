@@ -101,7 +101,6 @@ func relu_derivative(x):
 
 # 5 - 35 ms
 func dot(matrix1, matrix2):
-	print("matrix1: ", matrix1)
 	var start_time = Time.get_ticks_msec()
 	var result = []
 	for i in range(matrix1.size()):
@@ -358,7 +357,7 @@ func _ready():
 	
 	# Training the model
 	var lr = 0.001
-	var epochs = 0
+	var epochs = 10
 	var optimizer = 'gradient_descent'
 	network = train_network(network, X_train, y_train, lr, epochs, optimizer)
 
@@ -384,21 +383,3 @@ func _ready():
 	var end_time = Time.get_ticks_msec()
 	var elapsed_time = end_time - start_time
 	print("Prediction time taken: " + str(elapsed_time/1000) + " s (" + str(elapsed_time) + " ms)")
-
-	
-	# Testing vectors
-	var a1 = [2, 2]
-	var b1 = [2, 2]
-	var vectorA1 = Vector2(a1[0], a1[1])
-	var vectorB1 = Vector2(b1[0], b1[1])
-	var c1 = vectorA1.dot(vectorB1)
-	print(vectorA1)
-	print(vectorB1)
-	print(c1)
-	
-	var a2 = Vector2(2, 2)
-	var b2 = Vector2(2, 2)
-	var c2 = a2.dot(b2)
-	print(a2)
-	print(b2)
-	print(c2)
