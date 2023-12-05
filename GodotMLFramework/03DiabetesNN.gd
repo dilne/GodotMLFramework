@@ -101,6 +101,9 @@ func relu_derivative(x):
 
 # 5 - 35 ms
 func dot(matrix1, matrix2):
+	if matrix1[0].size() != matrix2.size():
+		print("Error: The number of columns in the first matrix must be equal to the number of rows in the second matrix.")
+
 	var start_time = Time.get_ticks_msec()
 	var result = []
 	for i in range(matrix1.size()):
@@ -307,11 +310,11 @@ func make_predictions(network, X):
 
 func _ready():
 	# Creating the model
-	var network = [fully_connected(8, 8, 'sigmoid'),
-			   fully_connected(8, 8, 'sigmoid'),
-			   fully_connected(8, 1, 'sigmoid')]
+	var network = [fully_connected(8, 16, 'sigmoid'),
+			   fully_connected(16, 16, 'sigmoid'),
+			   fully_connected(16, 1, 'sigmoid')]
 	
-	var file = FileAccess.open("/Users/danielmilne/Documents/GitHub/GodotMLFramework/diabetes.csv", FileAccess.READ)
+	var file = FileAccess.open("E:\\GitHub\\GodotMLFramework\\diabetes.csv", FileAccess.READ)
 	var X = []
 	var y = []
 
@@ -357,7 +360,7 @@ func _ready():
 	
 	# Training the model
 	var lr = 0.001
-	var epochs = 10
+	var epochs = 50
 	var optimizer = 'gradient_descent'
 	network = train_network(network, X_train, y_train, lr, epochs, optimizer)
 
